@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<!DOCTYPE ejb-jar
+    PUBLIC "-//Sun Microsystems, Inc.//DTD Enterprise JavaBeans 2.0//EN"
+    "http://java.sun.com/dtd/ejb-jar_2_0.dtd">
+
+<!--
+  The EJB container's deployment descriptor - the counterpart to web.xml.
+  This is the whole point of the comparison: web.xml declares how requests
+  reach code, while ejb-jar.xml declares what the container does AROUND your
+  code once it gets there: transactions, security and lifecycle.
+
+  Nothing here is a servlet concept. There is no equivalent of
+  <container-transaction> in the servlet container; if you want a transaction
+  there, you write it by hand.
+-->
+<ejb-jar>
+
+  <display-name>eBay business tier</display-name>
+
+  <enterprise-beans>
+
+    <session>
+      <description>Bidding operations, moved out of the web tier.</description>
+      <ejb-name>Bidding</ejb-name>
+      <local-home>com.ebay.ejb.BiddingLocalHome</local-home>
+      <local>com.ebay.ejb.BiddingLocal</local>
+      <ejb-class>com.ebay.ejb.BiddingBean</ejb-class>
+      <session-type>Stateless</session-type>
+      <transaction-type>Container</transaction-type>
+      <resource-ref>
+        <res-ref-name>jdbc/ebayDS</res-ref-name>
+        <res-type>javax.sql.DataSource</res-type>
+        <res-auth>Container</res-auth>
+      </resource-ref>
+    </session>
+
+    <session>
+      <description>Conversational watch list held in the business tier.</description>
+      <ejb-name>WatchList</ejb-name>
+      <local-home>com.ebay.ejb.WatchListLocalHome</local-home>
+      <local>com.ebay.ejb.WatchListLocal</local>
+      <ejb-class>com.ebay.ejb.WatchListBean</ejb-class>
+      <session-type>Stateful</session-type>
+      <transaction-type>Container</transaction-type>
+    </session>
+
+  </enterprise-beans>
+
+  <assembly-descriptor>
+
+    <!--
+      Declarative security. Left unchecked so the demonstration stays open,
+      but this is where <role-name> would replace the filter you would
+      otherwise write in the web tier.
+    -->
+    <method-permission>
+      <unchecked/>
+      <method>
+        <ejb-name>Bidding</ejb-name>
+        <method-name>*</method-name>
+      </method>
+    </method-permission>
+    <method-permission>
+      <unchecked/>
+      <method>
+        <ejb-name>WatchList</ejb-name>
+        <method-name>*</method-name>
+      </method>
+    </method-permission>
+
+    <!--
+      Declarative transactions. Every method of Bidding runs inside a
+      container transaction: it starts one if none exists and joins the
+      caller's if there is one. A system exception thrown from the bean
+      rolls it back, with no commit or rollback written in Java anywhere.
+    -->
+    <container-transaction>
+      <method>
+        <ejb-name>Bidding</ejb-name>
+        <method-name>*</method-name>
+      </method>
+      <trans-attribute>Required</trans-attribute>
+    </container-transaction>
+
+    <container-transaction>
+      <method>
+        <ejb-name>WatchList</ejb-name>
+        <method-name>*</method-name>
+      </method>
+      <trans-attribute>Supports</trans-attribute>
+    </container-transaction>
+
+  </assembly-descriptor>
+
+</ejb-jar>

@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<!--
+  Container-managed resources. In the servlet-only edition there is no such
+  file: a servlet that wants a database opens its own connection and owns its
+  own commit. Here the container owns the pool and enlists connections in the
+  transaction it started.
+
+  Two datasources over the same in-memory database, so the difference is
+  visible: one enlisted in JTA, one not.
+-->
+<tomee>
+
+  <Resource id="ebayDS" type="javax.sql.DataSource">
+    JdbcDriver  org.hsqldb.jdbcDriver
+    JdbcUrl     jdbc:hsqldb:mem:ebay
+    UserName    sa
+    Password
+    JtaManaged  true
+  </Resource>
+
+  <Resource id="ebayDSNoTx" type="javax.sql.DataSource">
+    JdbcDriver  org.hsqldb.jdbcDriver
+    JdbcUrl     jdbc:hsqldb:mem:ebay
+    UserName    sa
+    Password
+    JtaManaged  false
+  </Resource>
+
+</tomee>
